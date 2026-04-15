@@ -33,6 +33,7 @@ OceanTile::OceanTile( void )
     ,_maxDelta     (0)
     ,_averageHeight(0)
     ,_maxHeight    (0)
+    ,_useVBO       (false)
 {}
 
 OceanTile::OceanTile( osg::FloatArray* heights, 
@@ -126,8 +127,10 @@ OceanTile::OceanTile( const OceanTile& tile,
     ,_vertices   ( new osg::Vec3Array(_numVertices) )
     ,_normals    ( new osg::Vec3Array(_numVertices) )
     ,_spacing    ( spacing )
-    ,_maxDelta   ( 0.f )
-    ,_useVBO     ( tile.getUseVBO() )
+    ,_maxDelta     ( 0.f )
+    ,_averageHeight( 0.f )
+    ,_maxHeight    ( 0.f )
+    ,_useVBO       ( tile.getUseVBO() )
 {
     unsigned int parentRes = tile.getResolution();
     unsigned int inc = parentRes/_resolution;

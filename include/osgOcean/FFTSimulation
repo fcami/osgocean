@@ -29,11 +29,15 @@ namespace osgOcean
     class OSGOCEAN_EXPORT FFTSimulation
     {
     private:
-        // Implementation hidden so that clients do not need to depend on the 
+        // Implementation hidden so that clients do not need to depend on the
         // FFT library's headers. All calls to FFTSimulation are delegated to
         // the private Implementation class.
         class Implementation;
         Implementation* _implementation;
+
+        // Non-copyable: raw pointer to Implementation would be double-freed.
+        FFTSimulation(const FFTSimulation&);
+        FFTSimulation& operator=(const FFTSimulation&);
 
     public:
 
