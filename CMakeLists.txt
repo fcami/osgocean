@@ -69,6 +69,9 @@ IF (NOT WIN32)
   IF (NOT OPENTHREADS_LIBRARY_DEBUG)
     SET(OPENTHREADS_LIBRARY_DEBUG ${OPENTHREADS_LIBRARY})
   ENDIF()
+  IF (NOT OSGSHADOW_LIBRARY_DEBUG)
+    SET(OSGSHADOW_LIBRARY_DEBUG ${OSGSHADOW_LIBRARY})
+  ENDIF()
 ENDIF()
 
 find_package (OpenGL REQUIRED)
@@ -131,6 +134,9 @@ IF (WIN32)
 ENDIF()
 
 add_subdirectory (src)
+
+enable_testing()
+add_subdirectory (tests)
 
 # --- Static analysis ---
 
