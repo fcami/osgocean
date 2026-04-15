@@ -1,0 +1,89 @@
+/*
+* This source file is part of the osgOcean library
+*
+* Copyright (C) 2009 Kim Bale
+* Copyright (C) 2009 The University of Hull, UK
+*
+* This program is free software; you can redistribute it and/or modify it under
+* the terms of the GNU Lesser General Public License as published by the Free Software
+* Foundation; either version 3 of the License, or (at your option) any later
+* version.
+
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+* http://www.gnu.org/copyleft/lesser.txt.
+*/
+
+#pragma once
+#include <osgOcean/Export>
+#include <osg/Vec2f>
+
+namespace osgOcean
+{
+    /**
+    * Interface for ocean wave spectral models.
+    *
+    * A WaveSpectrum computes the spectral energy S(K) for a given wave
+    * vector K. Different implementations model different sea conditions
+    * (Phillips for idealized deep water, JONSWAP for fetch-limited seas,
+    * TMA for shallow water).
+    *
+    * The FFTSimulation calls this once per grid point during initialization
+    * to build the base Fourier amplitudes. The spectrum is not called at
+    * runtime — only at construction or when ocean parameters change.
+    */
+    class OSGOCEAN_EXPORT WaveSpectrum
+    {
+    public:
+        virtual ~WaveSpectrum() {}
+
+        /**
+        * Compute spectral energy at wave vector K.
+        * @param K Wave vector in radians per meter.
+        * @return Spectral energy S(K). Must be non-negative.
+        */
+        virtual float operator()(const osg::Vec2f& K) const = 0;
+    };
+
+    /**
+    * Phillips spectrum — the original osgOcean spectral model.
+    *
+    * Assumes fully developed seas with infinite fetch. Good for open
+    * ocean in steady-state conditions.
+    *
+    * Reference: Phillips, O.M. (1957) "On the generation of waves by
+    * turbulent wind." Journal of Fluid Mechanics.
+    */
+    class OSGOCEAN_EXPORT PhillipsSpectrum : public WaveSpectrum
+    {
+    public:
+        /**
+        * @param windDir      Normalized wind direction.
+        * @param windSpeed    Wind speed in m/s.
+        * @param waveScale    Wave amplitude scale factor (typically 1e-9 to 1e-8).
+        * @param tileRes      Tile resolution in meters.
+        * @param reflDamping  Damping factor for waves opposing wind direction [0,1].
+        * @param fourierSize  FFT grid size (used to scale the amplitude).
+        */
+        PhillipsSpectrum(
+            const osg::Vec2f& windDir,
+            float windSpeed,
+            float waveScale,
+            float tileRes,
+            float reflDamping,
+            int fourierSize);
+
+        virtual float operator()(const osg::Vec2f& K) const;
+
+    private:
+        osg::Vec2f _windDir;
+        float _windSpeed4;
+        float _A;
+        float _maxWave;
+        float _reflDampFactor;
+
+        static const float GRAVITY;
+        static const float GRAVITY2;
+    };
+}

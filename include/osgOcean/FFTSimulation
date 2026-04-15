@@ -17,6 +17,7 @@
 
 #pragma once
 #include <osgOcean/Export>
+#include <osgOcean/WaveSpectrum>
 #include <osg/Vec2f>
 #include <osg/Array>
 
@@ -56,9 +57,22 @@ namespace osgOcean
             float windSpeed  = 12.f,
             float depth = 1000.f,
             float reflectionDamping = 0.35f,
-            float waveScale = 1e-9,    
+            float waveScale = 1e-9,
             float tileRes = 256.f,
             float loopTime  = 10.f
+            );
+
+        /** Constructor with explicit spectrum.
+        * Uses the provided WaveSpectrum instead of the built-in Phillips.
+        * The spectrum is called once during construction to compute base
+        * amplitudes — it is not stored or called at runtime.
+        */
+        FFTSimulation(
+            const WaveSpectrum& spectrum,
+            int fourierSize,
+            float depth,
+            float tileRes,
+            float loopTime
             );
 
         /** Destructor.
