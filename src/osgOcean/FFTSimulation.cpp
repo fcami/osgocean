@@ -194,8 +194,8 @@ FFTSimulation::Implementation::Implementation( const WaveSpectrum& spectrum,
     _realData1 = new fftw_complex[ _numPoints ];
 #endif
 
-    _fftPlan0 = fftw_plan_dft_2d( _N, _N, _complexData0, _realData0, FFTW_BACKWARD, FFTW_MEASURE );
-    _fftPlan1 = fftw_plan_dft_2d( _N, _N, _complexData1, _realData1, FFTW_BACKWARD, FFTW_MEASURE );
+    _fftPlan0 = fftw_plan_dft_2d( _N, _N, _complexData0, _realData0, FFTW_BACKWARD, FFTW_ESTIMATE );
+    _fftPlan1 = fftw_plan_dft_2d( _N, _N, _complexData1, _realData1, FFTW_BACKWARD, FFTW_ESTIMATE );
 }
 
 FFTSimulation::Implementation::Implementation( int fourierSize,
@@ -240,8 +240,8 @@ FFTSimulation::Implementation::Implementation( int fourierSize,
     _realData1 = new fftw_complex[ _numPoints ];
 #endif
 
-    _fftPlan0 = fftw_plan_dft_2d( _N, _N, _complexData0, _realData0, FFTW_BACKWARD, FFTW_MEASURE );
-    _fftPlan1 = fftw_plan_dft_2d( _N, _N, _complexData1, _realData1, FFTW_BACKWARD, FFTW_MEASURE );
+    _fftPlan0 = fftw_plan_dft_2d( _N, _N, _complexData0, _realData0, FFTW_BACKWARD, FFTW_ESTIMATE );
+    _fftPlan1 = fftw_plan_dft_2d( _N, _N, _complexData1, _realData1, FFTW_BACKWARD, FFTW_ESTIMATE );
 }
 
 FFTSimulation::Implementation::~Implementation()
