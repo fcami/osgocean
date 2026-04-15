@@ -124,6 +124,31 @@ float alphaHeight( float min, float max, float val)
     return (val - min) / (max - min);
 }
 
+// Compute foam coverage at this fragment.
+// Returns alpha [0,1] controlling how much foam texture to blend in.
+// Inputs: vertex height, water depth (from heightmap), fresnel factor.
+// This function encapsulates the foam decision policy — replace it
+// to change when/where foam appears (e.g. Jacobian-based whitecapping).
+float computeFoamCoverage(float vertexZ, float waterHeight,
+                          float fresnel, bool hasHeightmap)
+{
+    if (vertexZ <= osgOcean_FoamCapBottom &&
+        !(hasHeightmap && waterHeight < 10.0))
+        return 0.0;
+
+    float alpha;
+    if (hasHeightmap)
+    {
+        alpha = max(alphaHeight(osgOcean_FoamCapBottom, osgOcean_FoamCapTop, vertexZ) * (fresnel*2.0),
+                    0.8 - clamp(waterHeight / 10.0, 0.0, 0.8));
+    }
+    else
+    {
+        alpha = alphaHeight(osgOcean_FoamCapBottom, osgOcean_FoamCapTop, vertexZ) * (fresnel*2.0);
+    }
+    return alpha;
+}
+
 float computeDepthBlur(float depth, float focus, float near, float far, float clampval )
 {
    float f;
@@ -254,22 +279,12 @@ void main( void )
 
         if(osgOcean_EnableCrestFoam)
         {
-            if( vVertex.z > osgOcean_FoamCapBottom || 
-                (osgOcean_EnableHeightmap && waterHeight < 10.0))
+            float foamAlpha = computeFoamCoverage(vVertex.z, waterHeight,
+                                                  fresnel, osgOcean_EnableHeightmap);
+            if (foamAlpha > 0.0)
             {
                 vec4 foam_color = texture2D( osgOcean_FoamMap, gl_TexCoord[1].st / 10.0);
-
-                float alpha;
-                if (osgOcean_EnableHeightmap)
-                {
-                    alpha = max(alphaHeight( osgOcean_FoamCapBottom, osgOcean_FoamCapTop, vVertex.z ) * (fresnel*2.0),
-                                  0.8 - clamp(waterHeight / 10.0, 0.0, 0.8));
-                }
-                else
-                {
-                    alpha = alphaHeight( osgOcean_FoamCapBottom, osgOcean_FoamCapTop, vVertex.z ) * (fresnel*2.0);
-                }
-                final_color = final_color + (foam_color * alpha);
+                final_color = final_color + (foam_color * foamAlpha);
             }
         }
 
