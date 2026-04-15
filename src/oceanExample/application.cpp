@@ -29,6 +29,7 @@
 #include <osg/Notify>
 
 #include <osgDB/ReadFile>
+#include <osgDB/WriteFile>
 
 #include <osgShadow/ShadowedScene>
 #include <osgShadow/ViewDependentShadowMap>
@@ -408,8 +409,10 @@ int main(int argc, char *argv[])
     view->addEventHandler( new osgGA::StateSetManipulator( view->getCamera()->getOrCreateStateSet() ) );
 
     osg::ref_ptr<TextHUD> hud = new TextHUD;
-    // Add the HUD to the main view (if compositeViewer == true there will be a second one)
-    view->getCamera()->addChild( hud->getHudCamera() );
+    // Add the HUD to the main view, but skip it in capture mode
+    // so the golden images don't depend on HUD text content.
+    if (!getenv("OSGOCEAN_CAPTURE"))
+        view->getCamera()->addChild( hud->getHudCamera() );
 
     view->addEventHandler(scene->getOceanSceneEventHandler());
     view->addEventHandler(scene->getOceanSurface()->getEventHandler());
@@ -418,11 +421,55 @@ int main(int argc, char *argv[])
     view->addEventHandler( new osgViewer::HelpHandler );
     view->getCamera()->setName("MainCamera");
 
+    const char* captureFile = getenv("OSGOCEAN_CAPTURE");
+
+    // Callback that reads back the framebuffer at the end of a frame's draw.
+    struct CaptureCallback : public osg::Camera::DrawCallback
+    {
+        std::string filename;
+        int framesLeft;
+        osg::ref_ptr<osg::Image> image;
+        bool done;
+
+        CaptureCallback(const std::string& f, int frames)
+            : filename(f), framesLeft(frames), done(false) {}
+
+        virtual void operator()(osg::RenderInfo& renderInfo) const
+        {
+            CaptureCallback* self = const_cast<CaptureCallback*>(this);
+            if (self->done) return;
+
+            if (self->framesLeft > 0) {
+                --self->framesLeft;
+                return;
+            }
+
+            const osg::Viewport* vp = renderInfo.getCurrentCamera()->getViewport();
+            int w = vp->width();
+            int h = vp->height();
+            self->image = new osg::Image;
+            self->image->readPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE);
+            osgDB::writeImageFile(*self->image, self->filename);
+            osg::notify(osg::NOTICE) << "Captured " << w << "x" << h
+                                     << " to " << self->filename << std::endl;
+            self->done = true;
+        }
+    };
+
+    osg::ref_ptr<CaptureCallback> captureCallback;
+    if (captureFile)
+    {
+        captureCallback = new CaptureCallback(captureFile, 120);
+        view->getCamera()->setFinalDrawCallback(captureCallback.get());
+    }
+
     viewer->realize();
 
     while(!viewer->done())
     {
-        viewer->frame();    
+        viewer->frame();
+        if (captureCallback && captureCallback->done)
+            break;
     }
 
     return 0;
