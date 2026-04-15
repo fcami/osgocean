@@ -86,4 +86,52 @@ namespace osgOcean
         static const float GRAVITY;
         static const float GRAVITY2;
     };
+
+    /**
+    * JONSWAP spectrum — fetch-limited sea state.
+    *
+    * Produces sharper spectral peaks than Phillips, matching real ocean
+    * measurements. The peak enhancement factor gamma (default 3.3)
+    * controls how narrow the spectral peak is.
+    *
+    * Reference: Hasselmann et al. (1973) "Measurements of Wind-Wave
+    * Growth and Swell Decay during the Joint North Sea Wave Project
+    * (JONSWAP)."
+    */
+    class OSGOCEAN_EXPORT JONSWAPSpectrum : public WaveSpectrum
+    {
+    public:
+        /**
+        * @param windDir      Normalized wind direction.
+        * @param windSpeed    Wind speed in m/s.
+        * @param fetch        Fetch distance in meters (distance over which wind blows).
+        * @param waveScale    Wave amplitude scale factor.
+        * @param tileRes      Tile resolution in meters.
+        * @param reflDamping  Damping factor for waves opposing wind direction [0,1].
+        * @param fourierSize  FFT grid size (used to scale the amplitude).
+        * @param gamma        Peak enhancement factor (default 3.3).
+        */
+        JONSWAPSpectrum(
+            const osg::Vec2f& windDir,
+            float windSpeed,
+            float fetch,
+            float waveScale,
+            float tileRes,
+            float reflDamping,
+            int fourierSize,
+            float gamma = 3.3f);
+
+        virtual float operator()(const osg::Vec2f& K) const;
+
+    private:
+        osg::Vec2f _windDir;
+        float _windSpeed;
+        float _fetch;
+        float _A;
+        float _reflDampFactor;
+        float _gamma;
+        float _wp;          // peak angular frequency
+
+        static const float GRAVITY;
+    };
 }
