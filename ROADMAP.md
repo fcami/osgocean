@@ -147,15 +147,16 @@ Each item changes what the code produces. Items with no dependency
 can be done at any time, including in parallel with Sequence 2.
 Items with a dependency name the specific refactoring step required.
 
-### B1. FFTW_MEASURE + threading (hours)
+### B1. FFTW_MEASURE + threading — CLOSED
 
-**Depends on:** nothing.
+Implemented, benchmarked, reverted. FFTW_MEASURE provides no
+per-frame benefit on Intel / FFTW 3.3.10 at grid sizes 64-512.
+The ESTIMATE plan is already near-optimal. Construction overhead
+(55-93ms) is not justified.
 
-Change `FFTW_ESTIMATE` to `FFTW_MEASURE` in FFTSimulation.cpp.
-Add `fftw_init_threads()` and `fftw_plan_with_nthreads(3)` before
-plan creation. Three lines of code. Expected speedup: 20-50% on
-the FFT execution. If startup time is unacceptable, offer a CMake
-option to choose ESTIMATE vs MEASURE.
+bench_fft tool added for measurement on other platforms.
+
+Threading (`fftw_init_threads`) remains untested.
 
 ### B2. Sub-surface scattering (hours)
 
