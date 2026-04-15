@@ -135,6 +135,9 @@ ENDIF()
 
 add_subdirectory (src)
 
+enable_testing()
+add_subdirectory (tests)
+
 # --- Static analysis ---
 
 option(ENABLE_CPPCHECK "Run cppcheck during build" OFF)
