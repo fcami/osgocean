@@ -68,6 +68,7 @@ SET( LIB_HEADERS
   ${HEADER_PATH}/ShaderManager
   ${HEADER_PATH}/SiltEffect
   ${HEADER_PATH}/WaterTrochoids
+  ${HEADER_PATH}/WaveSpectrum
   ${HEADER_PATH}/Export
   ${HEADER_PATH}/Version
 )
@@ -107,6 +108,7 @@ ADD_LIBRARY(
   ShaderManager.cpp
   SiltEffect.cpp
   WaterTrochoids.cpp
+  WaveSpectrum.cpp
   Version.cpp
   ${SHADER_FILES}
 )
