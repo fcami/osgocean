@@ -116,6 +116,26 @@ float calcFresnel( float dotEN, float mul )
     return pow(fresnel, -8.0) * mul;
 }
 
+// Above-water surface lighting: specular highlight + Fresnel blend.
+// Replace this function to change the lighting model (e.g. PBR BRDF).
+vec4 computeAboveWaterLighting(vec3 N, vec3 L, vec3 E,
+                               vec4 env_color, vec4 refraction_color,
+                               float fresnelMul)
+{
+    vec3 R = reflect(-L, N);
+    vec4 specular_color = vec4(0.0);
+
+    float lambertTerm = dot(N, L);
+    if (lambertTerm > 0.0)
+    {
+        float specCoeff = pow(max(dot(R, E), 0.0), shininess);
+        specular_color = gl_LightSource[osgOcean_LightID].diffuse * specCoeff * 6.0;
+    }
+
+    float fresnel = calcFresnel(dot(E, N), fresnelMul);
+    return mix(refraction_color, env_color, fresnel) + specular_color;
+}
+
 float alphaHeight( float min, float max, float val)
 {
     if(max-min == 0.0)
@@ -198,20 +218,8 @@ void main( void )
         vec3 N = normalize( vNormal + noiseNormal );
         vec3 L = normalize( vLightDir );
         vec3 E = normalize( vViewerDir );
-        vec3 R = reflect( -L, N );
-
-        vec4 specular_color = vec4(0.0);
-
-        float lambertTerm = dot(N,L);
-
-        if( lambertTerm > 0.0 )
-        {
-            float specCoeff = pow( max( dot(R, E), 0.0 ), shininess );
-            specular_color = gl_LightSource[osgOcean_LightID].diffuse * specCoeff * 6.0;
-        }
 
         float dotEN = dot(E, N);
-        float dotLN = dot(L, N);
 
         vec4 distortedVertex = distortGen(vVertex, N);
 
@@ -264,7 +272,7 @@ void main( void )
 
         float fresnel = calcFresnel(dotEN, osgOcean_FresnelMul );
 
-        final_color = mix(refraction_color, env_color, fresnel) + specular_color;
+        final_color = computeAboveWaterLighting(N, L, E, env_color, refraction_color, osgOcean_FresnelMul);
 
         // Store the color here to compute luminance later, we don't want
         // foam or fog to be taken into account for this calculation.
