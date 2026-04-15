@@ -21,6 +21,16 @@ add_test(
 )
 set_tests_properties(fft_characterization PROPERTIES LABELS "cpu")
 
+# --- FFT benchmark (not a test — manual performance measurement) ---
+
+add_executable(bench_fft bench_fft.cpp)
+target_link_libraries(bench_fft
+    osgOcean
+    optimized ${OSG_LIBRARY}
+    debug ${OSG_LIBRARY_DEBUG}
+    ${FFT_LIBRARY}
+)
+
 # --- GPU rendering tests (uses oceanExample with OSGOCEAN_CAPTURE) ---
 #
 # Each test runs the example app with specific arguments, captures the
