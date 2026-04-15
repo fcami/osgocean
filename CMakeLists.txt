@@ -2,7 +2,7 @@
 # refer to the root source directory of the project as ${osgOcean_SOURCE_DIR}
 # to the root binary directory of the project as ${osgOcean_BINARY_DIR}.
 
-cmake_minimum_required (VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.10 FATAL_ERROR)
 
 project (osgOcean)
 
@@ -131,3 +131,46 @@ IF (WIN32)
 ENDIF()
 
 add_subdirectory (src)
+
+# --- Static analysis ---
+
+option(ENABLE_CPPCHECK "Run cppcheck during build" OFF)
+option(ENABLE_CLANG_TIDY "Run clang-tidy during build" OFF)
+
+if(ENABLE_CPPCHECK)
+    find_program(CPPCHECK_EXE cppcheck)
+    if(CPPCHECK_EXE)
+        set(CMAKE_CXX_CPPCHECK
+            ${CPPCHECK_EXE}
+            --enable=warning,performance,portability
+            --suppress=missingIncludeSystem
+            --inline-suppr
+            --quiet
+        )
+        message(STATUS "cppcheck enabled: ${CPPCHECK_EXE}")
+    else()
+        message(WARNING "cppcheck requested but not found")
+    endif()
+endif()
+
+if(ENABLE_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXE clang-tidy)
+    if(CLANG_TIDY_EXE)
+        set(CMAKE_CXX_CLANG_TIDY
+            ${CLANG_TIDY_EXE}
+            --checks=-*,bugprone-*,performance-*,portability-*,-bugprone-easily-swappable-parameters
+        )
+        message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE}")
+    else()
+        message(WARNING "clang-tidy requested but not found")
+    endif()
+endif()
+
+# --- Image comparison tool (for visual regression tests) ---
+
+find_program(IMGDIFF_EXE imgdiff)
+if(IMGDIFF_EXE)
+    message(STATUS "imgdiff found: ${IMGDIFF_EXE}")
+else()
+    message(STATUS "imgdiff not found — visual regression tests will be skipped")
+endif()

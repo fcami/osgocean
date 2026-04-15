@@ -113,6 +113,9 @@ FFTOceanTechnique::FFTOceanTechnique( const FFTOceanTechnique& copy, const osg::
     ,_foamCapTop     ( copy._foamCapTop )
     ,_isStateDirty   ( copy._isStateDirty )
     ,_averageHeight  ( copy._averageHeight )
+    ,_maxHeight      ( copy._maxHeight )
+    ,_reflDampFactor ( copy._reflDampFactor )
+    ,_C              ( copy._C )
     ,_lightColor     ( copy._lightColor )
 {}
 
