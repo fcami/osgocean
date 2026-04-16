@@ -1,11 +1,6 @@
 # Build output
 build/
-
-# Runtime resource files (binary assets, not tracked)
-resources/textures/sky_clear/
-resources/textures/sky_dusk/
-resources/textures/sky_fair_cloudy/
-resources/island/
+build-*/
 
 # Test output (generated during test runs)
 tests/golden/*_actual.png
